@@ -1,0 +1,19 @@
+# Build output
+build/
+.kotlin/
+
+# Gradle build for Android Studio (module output goes to shared/build, androidApp/build)
+.gradle/
+build-gradle/
+
+# Signing secrets (never commit)
+androidApp/keystore.properties
+*.jks
+*.keystore
+local.properties
+
+# IDE and OS files
+.idea/
+*.iml
+xcuserdata/
+.DS_Store

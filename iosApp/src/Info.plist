@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>CFBundleDevelopmentRegion</key>
+        <string>$(DEVELOPMENT_LANGUAGE)</string>
+        <key>CFBundleDisplayName</key>
+        <string>Service Calendar</string>
+        <key>CFBundleExecutable</key>
+        <string>$(EXECUTABLE_NAME)</string>
+        <key>CFBundleIdentifier</key>
+        <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+        <key>CFBundleInfoDictionaryVersion</key>
+        <string>6.0</string>
+        <key>CFBundleName</key>
+        <string>$(PRODUCT_NAME)</string>
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+        <key>CFBundleShortVersionString</key>
+        <string>$(MARKETING_VERSION)</string>
+        <key>CFBundleVersion</key>
+        <string>$(CURRENT_PROJECT_VERSION)</string>
+        <key>UILaunchScreen</key>
+        <dict/>
+        <key>UIApplicationSupportsIndirectInputEvents</key>
+        <true/>
+        <key>UISupportedInterfaceOrientations</key>
+        <array>
+            <string>UIInterfaceOrientationPortrait</string>
+            <string>UIInterfaceOrientationLandscapeLeft</string>
+            <string>UIInterfaceOrientationLandscapeRight</string>
+        </array>
+        <key>UISupportedInterfaceOrientations~ipad</key>
+        <array>
+            <string>UIInterfaceOrientationPortrait</string>
+            <string>UIInterfaceOrientationPortraitUpsideDown</string>
+            <string>UIInterfaceOrientationLandscapeLeft</string>
+            <string>UIInterfaceOrientationLandscapeRight</string>
+        </array>
+        <!--
+            Google Drive backup: iOS OAuth client from the app's Google Cloud project (type iOS, bundle ID app.servicecalendar).
+            PLACEHOLDER: replace both values below with the real client ID and its reversed form, e.g.
+            GIDClientID = 123456789012-abc123.apps.googleusercontent.com, URL scheme = com.googleusercontent.apps.123456789012-abc123.
+            While GIDClientID is the placeholder, Connect Google Drive shows "Could not sign in to your Google account".
+        -->
+        <key>GIDClientID</key>
+        <string>YOUR_IOS_CLIENT_ID.apps.googleusercontent.com</string>
+        <key>CFBundleURLTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleURLName</key>
+                <string>Google OAuth redirect</string>
+                <key>CFBundleTypeRole</key>
+                <string>Editor</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>com.googleusercontent.apps.your-ios-client-id</string>
+                </array>
+            </dict>
+        </array>
+        <key>BGTaskSchedulerPermittedIdentifiers</key>
+        <array>
+            <string>app.servicecalendar.backup</string>
+        </array>
+        <key>UIBackgroundModes</key>
+        <array>
+            <string>processing</string>
+        </array>
+        <key>UIViewControllerBasedStatusBarAppearance</key>
+        <false/>
+        <key>UIStatusBarStyle</key>
+        <string>UIStatusBarStyleLightContent</string>
+        <key>CADisableMinimumFrameDurationOnPhone</key>
+        <true/>
+    </dict>
+</plist>

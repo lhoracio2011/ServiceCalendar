@@ -1,0 +1,21 @@
+product: android/app
+
+dependencies:
+  - //shared
+  - $libs.androidx.activity.compose
+  - $libs.androidx.work.runtime.ktx
+  - $libs.play.services.auth
+  - $compose.preview
+  - $compose.uiTooling
+
+settings:
+  compose: enabled
+  android:
+    namespace: app.servicecalendar
+    applicationId: app.servicecalendar
+    versionCode: 2
+    versionName: "1.1"
+    # Release signing reads androidApp/keystore.properties (not part of the source package).
+    # Without that file the release APK is built unsigned. See README "Release signing".
+    signing:
+      enabled: true

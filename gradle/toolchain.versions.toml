@@ -1,0 +1,40 @@
+# Versions that the Kotlin Toolchain 0.13.0 build (project.yaml / module.yaml) uses implicitly.
+# They are not listed in libs.versions.toml because the Toolchain supplies them itself
+# (`$compose.*` aliases, Kotlin, AGP, SDK levels). Used only by the parallel Gradle build
+# for Android Studio. Keep in sync with `./kotlin show settings` / `./kotlin show dependencies`
+# when the Toolchain is updated.
+
+[versions]
+kotlin = "2.4.20"                 # settings.kotlin.version (default)
+compose = "1.12.1"                # settings.compose.version (default)
+compose-material3 = "1.12.0-alpha03"  # resolved for $compose.material3
+compose-hotReload = "1.2.0"       # resolved for $compose.hotReload.runtimeApi
+agp = "9.3.1"                     # AGP bundled in the Toolchain (builder/gradle-9.3.1.jar)
+junit-jupiter = "5.10.1"          # resolved via kotlin-test-junit5 in the Toolchain test graph
+junit-platform = "1.10.1"
+android-compileSdk = "37"         # settings.android.compileSdk (default)
+android-targetSdk = "37"          # settings.android.targetSdk (default, = compileSdk)
+android-minSdk = "24"             # settings.android.minSdk (default)
+android-buildTools = "37.0.0"     # settings.android.buildToolsVersion (default)
+
+[libraries]
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
+compose-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
+compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
+compose-hotReload-runtimeApi = { module = "org.jetbrains.compose.hot-reload:hot-reload-runtime-api", version.ref = "compose-hotReload" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-kmpLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
