@@ -76,11 +76,15 @@ internal object BackupStrings {
     const val NOTICE_STALE = "The backup or account has changed. Prepare the restore again."
     const val NOTICE_REPLACE_UNAVAILABLE = "The backup cannot be replaced right now. Please try again."
 
+    const val INVALID_RESTORE = "The backup is damaged or failed validation, so it was not restored. Your data is unchanged."
+    const val INVALID_UPLOAD = "The data on this device failed a safety check, so the backup was not saved to Google Drive. Your data is unchanged."
+
     const val RETRY = "Retry"
     const val RESTORE_ACCESS = "Restore Access"
     const val RETRY_RESTORE = "Check Backup Again"
 
-    fun errorText(kind: BackupErrorKind, invalidDetail: String? = null): String = when (kind) {
+    /** [uploading] tells the two sources of [BackupErrorKind.INVALID_COPY] apart: a failed upload of local data, or a Drive copy rejected on restore. */
+    fun errorText(kind: BackupErrorKind, invalidDetail: String? = null, uploading: Boolean = false): String = when (kind) {
         BackupErrorKind.NETWORK -> "Cannot reach Google Drive. Your data on the device is safe. Check your internet connection and try again."
         BackupErrorKind.DRIVE_UNAVAILABLE -> "Google Drive is temporarily unavailable. Please try again a bit later."
         BackupErrorKind.NEEDS_USER_ACTION -> "Access to Google Drive needs to be restored."
@@ -91,8 +95,11 @@ internal object BackupStrings {
             "Your Google Drive storage is full, so the backup was not saved. Your data on the device is safe. Free up space and try again."
         BackupErrorKind.STORAGE_BUSY -> "The data is being updated. Please try again in a minute."
         BackupErrorKind.INVALID_COPY ->
-            "The backup is damaged or failed validation, so it was not restored. Your data is unchanged." +
-                (invalidDetail?.let { " $it" } ?: "")
+            if (uploading) {
+                INVALID_UPLOAD
+            } else {
+                INVALID_RESTORE + (invalidDetail?.let { " $it" } ?: "")
+            }
         BackupErrorKind.TOO_LARGE -> "The backup is too large to process."
         BackupErrorKind.COPY_MISSING -> "The backup file is gone from Google Drive. A new search is needed."
         BackupErrorKind.UNEXPECTED -> "An unexpected error occurred. Your data is unchanged. Please try again."

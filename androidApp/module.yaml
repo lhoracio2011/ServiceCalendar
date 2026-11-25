@@ -13,8 +13,8 @@ settings:
   android:
     namespace: app.servicecalendar
     applicationId: app.servicecalendar
-    versionCode: 2
-    versionName: "1.1"
+    versionCode: 3
+    versionName: "1.2"
     # Release signing reads androidApp/keystore.properties (not part of the source package).
     # Without that file the release APK is built unsigned. See README "Release signing".
     signing:

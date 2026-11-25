@@ -32,9 +32,8 @@ private val processStart = TimeSource.Monotonic.markNow()
 @OptIn(ExperimentalAtomicApi::class)
 private val lastAppOpenAttempt = AtomicLong(0L)
 
-/** Returns null if no attempt was started: no auth provider, consent in progress, or less than 10 minutes since the last attempt. The caller checks network. */
-@OptIn(ExperimentalAtomicApi::class)
-fun startBackupOnAppOpen(listener: BackupRunListener): BackupRun? {
+/** The coordinator for an automatic run, or null: no auth provider, setup failed, or consent in progress. */
+private fun automaticCoordinator(): app.servicecalendar.backup.BackupCoordinator? {
     val coordinator = try {
         val container = AppContainer.instance
         if (!container.hasGoogleAuthProvider) return null
@@ -43,7 +42,19 @@ fun startBackupOnAppOpen(listener: BackupRunListener): BackupRun? {
     } catch (e: Throwable) {
         return null
     }
-    if (coordinator.isConsentInProgress) return null
+    return if (coordinator.isConsentInProgress) null else coordinator
+}
+
+/** The app went to the background. Returns null if nothing was started. The coordinator uploads only changed data; the caller checks network and keeps the app alive while the run lasts. */
+fun startBackupOnLeave(listener: BackupRunListener): BackupRun? {
+    automaticCoordinator() ?: return null
+    return start(listener) { it.runOnLeave() }
+}
+
+/** Returns null if no attempt was started: no auth provider, consent in progress, or less than 10 minutes since the last attempt. The caller checks network. */
+@OptIn(ExperimentalAtomicApi::class)
+fun startBackupOnAppOpen(listener: BackupRunListener): BackupRun? {
+    automaticCoordinator() ?: return null
     val now = processStart.elapsedNow().inWholeMilliseconds + 1
     val last = lastAppOpenAttempt.load()
     if (last != 0L && now - last < APP_OPEN_MIN_INTERVAL.inWholeMilliseconds) return null

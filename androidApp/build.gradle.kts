@@ -31,8 +31,8 @@ android {
         applicationId = "app.servicecalendar"
         minSdk = toolchain.versions.android.minSdk.get().toInt()
         targetSdk = toolchain.versions.android.targetSdk.get().toInt()
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
     }
 
     // Toolchain layout: androidApp/src (Kotlin + AndroidManifest.xml), androidApp/res, androidApp/test.

@@ -6,6 +6,7 @@ The app is built with Kotlin Multiplatform and Compose Multiplatform: the screen
 
 ## Contents
 
+- [What's new in 1.2](#whats-new-in-12)
 - [What's new in 1.1](#whats-new-in-11)
 - [Install](#install)
 - [Build from source](#build-from-source)
@@ -14,6 +15,11 @@ The app is built with Kotlin Multiplatform and Compose Multiplatform: the screen
 - [Backup and restore](#backup-and-restore)
 - [Translations](#translations)
 - [Known limitations](#known-limitations)
+
+## What's new in 1.2
+
+- **Backup when you leave the app.** If data changed since the last backup and the phone is online, the app uploads a backup when it goes to the background. See [When the backup runs](#when-the-backup-runs).
+- **Clearer backup errors.** An invalid backup file now gets separate messages for upload and for restore.
 
 ## What's new in 1.1
 
@@ -27,15 +33,15 @@ The app is built with Kotlin Multiplatform and Compose Multiplatform: the screen
 
 ### Android
 
-1. Copy `ServiceCalendar-1.1-release.apk` to the phone (Android 7.0 or newer) and open it.
+1. Copy `ServiceCalendar-1.2-release.apk` to the phone (Android 7.0 or newer) and open it.
 2. Allow installing apps from this source when Android asks, then tap **Install**.
 3. Google Drive backup needs Google Play services on the phone and a Google account. Sign-in in the release APK works once the app's Google Cloud project (owned by you) has the Android OAuth client for `app.servicecalendar` with the release SHA-1 and is published **In production** (see [Backup and restore](#backup-and-restore) and [docs/google-cloud-setup.md](docs/google-cloud-setup.md)). Until then **Connect Google Drive** shows "Could not sign in to your Google account".
 
-Version 1.1 (package `app.servicecalendar`) installs over 1.0 and keeps its data. The earlier test build `calendar.apk` used a different package (`app.servicecalendar.dev`), so it installs as a separate app and its data does not carry over; it can be uninstalled after switching. Both find the same Drive backup when connected to the same Google account, so data from a test build can still be moved by connecting the release app and choosing **Restore Backup**.
+Version 1.2 (package `app.servicecalendar`) installs over 1.1 and 1.0 and keeps their data. The earlier test build `calendar.apk` used a different package (`app.servicecalendar.dev`), so it installs as a separate app and its data does not carry over; it can be uninstalled after switching. Both find the same Drive backup when connected to the same Google account, so data from a test build can still be moved by connecting the release app and choosing **Restore Backup**.
 
 ### iPhone
 
-There is no build that installs on an iPhone yet. That requires signing with an Apple Developer team that includes the iPhone (development or Ad Hoc profile), or distribution through TestFlight. Build it from source with Xcode as described below. `ServiceCalendar-1.1-iOS-Simulator.zip` contains a build for the iOS Simulator on a Mac: boot a simulator, unzip, then run `xcrun simctl install booted service-calendar.app` (or drag the app onto the simulator window).
+There is no build that installs on an iPhone yet. That requires signing with an Apple Developer team that includes the iPhone (development or Ad Hoc profile), or distribution through TestFlight. Build it from source with Xcode as described below. `ServiceCalendar-1.2-iOS-Simulator.zip` contains a build for the iOS Simulator on a Mac: boot a simulator, unzip, then run `xcrun simctl install booted service-calendar.app` (or drag the app onto the simulator window).
 
 ## Build from source
 
@@ -190,15 +196,16 @@ Sign-in and Drive access go through a Google Cloud project with the Drive API en
 
 ### When the backup runs
 
-After the first backup it runs **once a day**:
+After the first backup it runs **once a day** and when you leave the app:
 
 | | Android | iOS |
 | --- | --- | --- |
 | Mechanism | WorkManager periodic job, every 24 h, only with a network connection (`androidApp/src/backup/BackupScheduler.kt`) | `BGProcessingTask` `app.servicecalendar.backup` (`iosApp/src/BackgroundBackup.swift`) |
 | On app open | if the last backup is older than 24 h and the device is online, the backup runs immediately | same |
+| On leaving the app | if data changed since the last backup and the device is online, the backup runs when the app goes to the background, without the 24 h wait. Expedited WorkManager work (`LeaveBackupWorker`); on Android 11 and older it may show a short "Saving the backup to Google Drive" notification | runs inside a short background time slice (about 30 s) requested when the app goes to the background |
 | Failures | up to 5 attempts per run, with exponential backoff starting at 30 min, then the next daily run or app open | the system picks the time; not guaranteed daily, does not run after the app is force-closed |
 
-Doze mode, battery savers and some manufacturers' restrictions can delay the Android job; the next app open catches up. The automatic backup is never written more often than once per 24 hours. **Back Up Now** on the Backup screen skips that check and uploads immediately.
+Doze mode, battery savers and some manufacturers' restrictions can delay the Android job; the next app open catches up. The automatic backup is never written more often than once per 24 hours. **Back Up Now** on the Backup screen skips that check and uploads immediately. The backup on leaving the app is sent only when data changed. On iOS the time slice is short, so an upload on a slow network may not finish; the next app open or daily run catches up.
 
 Before each upload the app compares the Drive file revision with the one this device last wrote or restored. If another device with the same account changed the backup in the meantime, nothing is overwritten and the Backup screen asks again what to do.
 
@@ -238,11 +245,9 @@ Month and weekday names, dates and the decimal separator follow the phone. All o
 
 ## Known limitations
 
-This list is a draft; finalize it before release.
-
-- **iOS Google Drive backup is not connected yet.** The iOS app works fully offline, but its Backup screen shows "Backup is not available on this device" until the iOS OAuth client and the Google Sign-In SDK are added.
+- **iOS Google Drive backup needs the iOS OAuth client.** The iOS app signs in to Google itself (OAuth 2.0 with PKCE), but until the iOS client ID and URL scheme from the Cloud project are put into `iosApp/src/Info.plist`, **Connect Google Drive** shows "Could not sign in to your Google account" ([docs/google-cloud-setup.md](docs/google-cloud-setup.md), step 8). The iOS app works fully offline without it.
 - **English only.** Only dates, month and weekday names and the decimal separator follow the phone's language. Adding a language needs a code change ([docs/translations.md](docs/translations.md)).
-- **Automatic backup timing is not exact.** It is about once a day, subject to Doze, battery savers and manufacturer limits on Android, and to the system's scheduling on iOS, which does not run after the app is force-closed.
+- **Automatic backup timing is not exact.** It is about once a day, subject to Doze, battery savers and manufacturer limits on Android, and to the system's scheduling on iOS, which does not run after the app is force-closed. The backup on leaving the app on iOS has only about 30 seconds and may not finish on a slow network.
 - On Android, the system Back button in the place editor closes the app without keeping the unsaved form.
 - One user per device. If two phones use the same Google account, the app does not merge them; it asks which data to keep.
 - A backup made by a newer app version cannot be restored by an older one.

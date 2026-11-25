@@ -4,7 +4,7 @@ A step-by-step guide for the app owner. It goes from "I have the source code" to
 
 State of the Google Play rules in this guide: **25 November 2026**. Google changes its rules from time to time. If a screen looks different from this text, trust the screen and use the Help links given in each step.
 
-Out of scope: the iPhone version (App Store). Google Sign-In is not implemented in the iOS app yet, so the Drive backup does not work there.
+Out of scope: the iPhone version (App Store). Its Drive backup also needs the iOS OAuth client (see [google-cloud-setup.md](google-cloud-setup.md), step 8).
 
 ## Contents
 
@@ -93,16 +93,16 @@ The key proves that updates come from you. Treat it like the key to your house.
 
 ## 3. Set the version
 
-Every upload to Google Play needs a **higher `versionCode`** than the one before. The version name (`1.1`) is the text people see. The current values are `versionCode 2` and `versionName "1.1"`, and the package name (application ID) is `app.servicecalendar`.
+Every upload to Google Play needs a **higher `versionCode`** than the one before. The version name (`1.2`) is the text people see. The current values are `versionCode 3` and `versionName "1.2"`, and the package name (application ID) is `app.servicecalendar`.
 
-For the first upload you can keep version 1.1 (code 2). Change the version only when you publish a new update (see [step 11](#11-publishing-updates-later)).
+For the first upload you can keep version 1.2 (code 3). Change the version only when you publish a new update (see [step 11](#11-publishing-updates-later)).
 
 The numbers are set in two files that must always say the same thing:
 
 | File | Lines |
 | --- | --- |
-| `androidApp/build.gradle.kts` (used by Android Studio and `./gradlew`) | `versionCode = 2` and `versionName = "1.1"` |
-| `androidApp/module.yaml` (used by `./kotlin`) | `versionCode: 2` and `versionName: "1.1"` |
+| `androidApp/build.gradle.kts` (used by Android Studio and `./gradlew`) | `versionCode = 3` and `versionName = "1.2"` |
+| `androidApp/module.yaml` (used by `./kotlin`) | `versionCode: 3` and `versionName: "1.2"` |
 
 The iPhone app has its own, separate version number. Changing the Android version does not change it.
 
@@ -314,7 +314,7 @@ More details: [google-cloud-setup.md](google-cloud-setup.md), step 7.
 
 ## 11. Publishing updates later
 
-1. Change the version in both files (see [step 3](#3-set-the-version)): increase `versionCode` by 1 (2 becomes 3) and change `versionName` (for example `1.2`). Never reuse a `versionCode`.
+1. Change the version in both files (see [step 3](#3-set-the-version)): increase `versionCode` by 1 (3 becomes 4) and change `versionName` (for example `1.3`). Never reuse a `versionCode`.
 2. Use the **same** `release.jks` and `keystore.properties` as before.
 3. Build the new `.aab` (step 4) and check the SHA-1.
 4. In Play Console choose **Test and release → Production → Create new release**, upload the `.aab`, write release notes, and send it for review. (Optional: test it first in internal testing.)
@@ -330,7 +330,7 @@ The database and backup format are handled by the app. Users update from Google 
 | In the app: "Could not sign in to your Google account", or `UNREGISTERED_ON_API_CONSOLE` or error code 10 | The app signing certificate SHA-1 of Google Play is not registered as an Android client. Do [step 10](#10-fix-google-drive-sign-in-for-the-play-version). Make sure the package name is exactly `app.servicecalendar` and the SHA-1 is the **App signing key certificate**, not the upload key. Wait a few minutes after saving. |
 | Google shows "Access blocked: this app has not completed the Google verification process" or "…is in testing" | The consent screen is still in **Testing**. Publish it: [go-live-production.md](go-live-production.md). |
 | Sign-in works for a week, then stops | Same cause: the consent screen is in **Testing**, where Google ends the sign-in after 7 days. |
-| Play Console: "Version code 2 has already been used" | Increase `versionCode` in both files ([step 3](#3-set-the-version)), rebuild and upload again. |
+| Play Console: "Version code 3 has already been used" | Increase `versionCode` in both files ([step 3](#3-set-the-version)), rebuild and upload again. |
 | Play Console: "Your Android App Bundle is signed with the wrong key" (the certificate does not match the upload key) | You signed with a different key. Use the right `release.jks` (SHA-1 `88:2F:25:CF:...:0F:55`) and check `keystore.properties`. If the key is lost, use **App integrity → Request upload key reset**. |
 | The built `.aab` is unsigned or the SHA-1 is missing | `androidApp/keystore.properties` is missing or the path in `storeFile` is wrong. Fix it and build again. |
 | "You uploaded an APK. Use an Android App Bundle" | Upload the `.aab`, not the `.apk`. |

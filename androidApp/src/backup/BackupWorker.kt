@@ -7,11 +7,11 @@ import androidx.work.WorkerParameters
 import app.servicecalendar.AppContainer
 import kotlin.coroutines.cancellation.CancellationException
 
-class BackupWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+open class BackupWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         val outcome = try {
-            AppContainer.instance.backupCoordinator.runScheduled()
+            run(AppContainer.instance.backupCoordinator)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -26,6 +26,8 @@ class BackupWorker(context: Context, params: WorkerParameters) : CoroutineWorker
             WorkDecision.FAILURE -> Result.failure()
         }
     }
+
+    protected open suspend fun run(coordinator: BackupCoordinator): BackupOutcome = coordinator.runScheduled()
 
     enum class WorkDecision { SUCCESS, RETRY, FAILURE }
 

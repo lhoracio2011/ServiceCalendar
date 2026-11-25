@@ -261,6 +261,56 @@ class BackupCoordinatorTest {
     }
 
     @Test
+    fun `leaving the app uploads changed data and skips unchanged data`() = coordinatorTest { env ->
+        env.connect()
+        val fileId = env.drive.fileIds.single()
+        env.now += 1.hours
+
+        assertEquals(BackupOutcome.Skipped(BackupSkipReason.UP_TO_DATE), env.coordinator.runOnLeave())
+        assertEquals(listOf("list", "create"), env.drive.log)
+
+        env.seedLocal()
+        assertEquals(BackupOutcome.Uploaded, env.coordinator.runOnLeave())
+        assertEquals(listOf("list", "create", "meta:$fileId", "update:$fileId"), env.drive.log)
+        assertEquals(env.localSnapshot(), SnapshotCodec.decode(checkNotNull(env.drive.content(fileId))).withoutTime())
+
+        env.now += 1.hours
+        assertEquals(BackupOutcome.Skipped(BackupSkipReason.UP_TO_DATE), env.newCoordinator().runOnLeave())
+        assertEquals(4, env.drive.log.size)
+    }
+
+    @Test
+    fun `pending changes are reported only for a signed in account with changed data`() = coordinatorTest { env ->
+        env.seedLocal()
+        assertFalse(env.coordinator.hasChangesToBackUp()) // not signed in
+
+        env.connect()
+        assertFalse(env.coordinator.hasChangesToBackUp()) // just uploaded
+
+        env.store.write { it.execSQL("INSERT INTO procedure (name, archived) VALUES ('Інша', 0)") }
+        assertTrue(env.coordinator.hasChangesToBackUp())
+    }
+
+    @Test
+    fun `leaving the app without an account does nothing`() = coordinatorTest { env ->
+        assertEquals(BackupOutcome.Skipped(BackupSkipReason.NOT_CONNECTED), env.coordinator.runOnLeave())
+        assertTrue(env.drive.log.isEmpty())
+        assertEquals(0, env.auth.consentRequests)
+    }
+
+    @Test
+    fun `leaving the app never uploads while a restore decision is pending`() = coordinatorTest { env ->
+        env.drive.put(copyJson())
+        env.seedLocal()
+        env.connect() // a copy exists: the user has to choose
+        val log = env.drive.log.toList()
+        env.now += 1.hours
+
+        assertEquals(BackupOutcome.Skipped(BackupSkipReason.AWAITING_CHOICE), env.coordinator.runOnLeave())
+        assertEquals(log, env.drive.log)
+    }
+
+    @Test
     fun `price edit after a fresh backup counts as a change`() = coordinatorTest { env ->
         val catalog = CatalogRepository(env.store)
         val procedure = catalog.createProcedure("Exam")

@@ -34,6 +34,12 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         BackupScheduler.launchOnAppOpen(applicationContext)
     }
+
+    // The app went to the background (not a rotation): save changes made since the last backup before the phone may be lost.
+    override fun onStop() {
+        super.onStop()
+        if (!isChangingConfigurations) BackupScheduler.enqueueOnLeave(applicationContext)
+    }
 }
 
 @Preview

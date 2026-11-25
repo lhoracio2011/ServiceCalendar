@@ -40,6 +40,7 @@ struct iosApp: App {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { BackgroundBackup.runOnAppOpen() }
+            if phase == .background { BackgroundBackup.runOnLeave() }
         }
     }
 }

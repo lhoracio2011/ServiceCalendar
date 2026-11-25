@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Service Calendar</string>
+    <string name="backup_channel_name">Backup</string>
+    <string name="backup_notification_title">Saving the backup to Google Drive</string>
 </resources>

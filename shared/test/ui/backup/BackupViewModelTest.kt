@@ -514,11 +514,22 @@ class BackupViewModelTest {
         assertNull(failed.dialog) // the error is visible and the choice dialog does not cover it
         assertEquals(BackupRetry.PrepareRestore, failed.retry)
         assertEquals(BackupStrings.errorText(BackupErrorKind.INVALID_COPY), failed.errorText)
+        assertTrue("not restored" in checkNotNull(failed.errorText))
 
         controller.prepareOutcome = BackupOutcome.Completed
         controller.prepared = report
         model.retry(BackupRetry.PrepareRestore)
         until { it.dialog is BackupDialog.ConfirmRestore }
+    }
+
+    @Test
+    fun `an invalid copy from an upload does not say it was not restored`() {
+        val restore = BackupScreenState(true, BackupUiState(phase = BackupPhase.AWAITING_CHOICE, lastError = BackupErrorKind.INVALID_COPY))
+        val upload = BackupScreenState(true, BackupUiState(phase = BackupPhase.ACTIVE, lastError = BackupErrorKind.INVALID_COPY))
+
+        assertEquals(BackupStrings.INVALID_RESTORE, restore.errorText)
+        assertEquals(BackupStrings.INVALID_UPLOAD, upload.errorText)
+        assertTrue("not restored" !in checkNotNull(upload.errorText) && "not saved" in checkNotNull(upload.errorText))
     }
 
     @Test

@@ -288,6 +288,19 @@ class BackupCoordinator(
 
     suspend fun runOnAppOpen(): BackupOutcome = runAutomatic()
 
+    /** The app went to the background: uploads only when the data changed since the last backup. Every guard of the automatic run applies. */
+    suspend fun runOnLeave(): BackupOutcome = runAutomatic()
+
+    /** Cheap pre-check for callers that would otherwise start platform work for nothing: an account is signed in and the data differs from the last backup. The automatic run applies all other guards. */
+    suspend fun hasChangesToBackUp(): Boolean =
+        try {
+            auth.currentAccount() != null && states.dataChangedSinceBackup()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            false
+        }
+
     private suspend fun runAutomatic(force: Boolean = false): BackupOutcome {
         if (consentInProgress.load()) return BackupOutcome.Skipped(BackupSkipReason.CONSENT_IN_PROGRESS)
         return exclusive(BackupOperation.CHECKING) {

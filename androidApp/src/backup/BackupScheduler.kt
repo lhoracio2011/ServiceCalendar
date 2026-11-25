@@ -8,7 +8,10 @@ import android.util.Log
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import app.servicecalendar.AppContainer
@@ -26,6 +29,8 @@ object BackupScheduler {
 
     const val UNIQUE_WORK_NAME = "service-calendar-daily-backup"
 
+    const val LEAVE_WORK_NAME = "service-calendar-leave-backup"
+
     private const val APP_OPEN_MIN_INTERVAL_MS = 10 * 60 * 1000L
 
     private val lastAppOpenAttempt = AtomicLong(0L)
@@ -34,11 +39,46 @@ object BackupScheduler {
 
     private var appOpenJob: Job? = null
 
+    private var leaveJob: Job? = null
+
     @Synchronized
     fun launchOnAppOpen(context: Context) {
         if (appOpenJob?.isActive == true) return
         val appContext = context.applicationContext
         appOpenJob = appScope.launch { runOnAppOpen(appContext) }
+    }
+
+    /**
+     * The user left the app: queues one expedited upload if a signed-in account has data that differs from its last backup.
+     * One unique request at most; a newer one replaces a pending or running one, which re-reads the data. When the expedited quota is used up the
+     * request runs as ordinary work. The worker applies all coordinator guards again (pending restore decision, busy, consent).
+     */
+    @Synchronized
+    fun enqueueOnLeave(context: Context) {
+        if (leaveJob?.isActive == true) return
+        val appContext = context.applicationContext
+        leaveJob = appScope.launch {
+            val changed = try {
+                AppContainer.instance.backupCoordinator.hasChangesToBackUp()
+            } catch (e: IllegalStateException) {
+                false
+            }
+            if (!changed) return@launch
+            val request = OneTimeWorkRequestBuilder<LeaveBackupWorker>()
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build(),
+                )
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.MINUTES)
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .build()
+            try {
+                WorkManager.getInstance(appContext).enqueueUniqueWork(LEAVE_WORK_NAME, ExistingWorkPolicy.REPLACE, request)
+            } catch (e: IllegalStateException) {
+                Log.e(TAG, "Failed to queue backup on leave: ${e::class.simpleName}")
+            }
+        }
     }
 
     fun schedule(context: Context) {

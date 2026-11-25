@@ -137,7 +137,10 @@ data class BackupScreenState(
         }
 
     val errorText: String?
-        get() = backup.lastError?.let { BackupStrings.errorText(it, backup.invalidCopyReason?.userMessage()) }
+        get() = backup.lastError?.let {
+            // A rejected copy is only seen before the choice is made; in the active phase the same error comes from an upload.
+            BackupStrings.errorText(it, backup.invalidCopyReason?.userMessage(), uploading = backup.phase == BackupPhase.ACTIVE)
+        }
 
     companion object {
         val Unavailable = BackupScreenState(available = false)

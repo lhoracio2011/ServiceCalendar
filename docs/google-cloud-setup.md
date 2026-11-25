@@ -114,7 +114,7 @@ The Android client ID is not stored in the app; nothing has to be copied back in
 
 ### Step 8: iOS OAuth client
 
-At [Create client](https://console.cloud.google.com/auth/clients/create) choose type **iOS**, bundle ID `app.servicecalendar`. Copy the **Client ID** and **iOS URL scheme** (`com.googleusercontent.apps.…`). They go into `iosApp/src/Info.plist` as `GIDClientID` and a `CFBundleURLTypes` URL scheme when Google Sign-In is added to the iOS app.
+At [Create client](https://console.cloud.google.com/auth/clients/create) choose type **iOS**, bundle ID `app.servicecalendar`. Copy the **Client ID** and **iOS URL scheme** (`com.googleusercontent.apps.…`). Put them into `iosApp/src/Info.plist`: the Client ID replaces the placeholder in `GIDClientID`, the URL scheme replaces `com.googleusercontent.apps.your-ios-client-id` under `CFBundleURLTypes`. Then rebuild the iOS app. Until then **Connect Google Drive** on iOS shows "Could not sign in to your Google account".
 
 ### Step 9: Publish to production
 
