@@ -26,7 +26,7 @@ internal object BackupStrings {
     const val NO_BACKUP_YET = "No backup yet"
 
     const val STATUS_ACTIVE = "Backup is on"
-    const val STATUS_ACTIVE_HINT = "The backup is updated daily when a connection is available."
+    const val STATUS_ACTIVE_HINT = "The backup is updated daily and when you leave the app after making changes, if a connection is available."
     const val STATUS_SEARCH = "Looking for an existing backup"
     const val STATUS_SEARCH_HINT = "Nothing is uploaded to Drive until the search finishes."
     const val STATUS_SEARCH_FAILED = "Could not check for an existing backup"
